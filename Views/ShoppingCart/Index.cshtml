@@ -1,0 +1,44 @@
+﻿@model ShoppingCart
+
+<h2 class="mb-4">🛒 Giỏ hàng của bạn</h2>
+
+@if (Model.Items == null || !Model.Items.Any())
+{
+    <div class="alert alert-warning">Giỏ hàng của bạn đang trống.</div>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Sản phẩm</th>
+                <th class="text-center">Số lượng</th>
+                <th class="text-center">Giá</th>
+                <th class="text-center">Tổng</th>
+                <th class="text-center">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td class="text-center">@item.Quantity</td>
+                    <td class="text-center">@item.Price.ToString("#,##0") Vnđ</td>
+                    <td class="text-center">@((item.Price * item.Quantity).ToString("#,##0")) Vnđ</td>
+                    <td class="text-center">
+                        <a asp-action="RemoveFromCart" asp-route-productId="@item.ProductId" class="btn btn-danger btn-sm">
+                            ❌ Xóa
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <h4 class="mt-3 text-end">🛍️ Tổng tiền: <strong>@Model.GetTotalPrice().ToString("#,##0") Vnđ</strong></h4>
+}
+<div class="d-flex justify-content-end mt-4">
+    <a asp-action="Checkout" asp-controller="ShoppingCart" class="btn btn-success btn-lg">
+        🛒 Tiến hành thanh toán
+    </a>
+</div>
