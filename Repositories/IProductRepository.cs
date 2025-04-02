@@ -1,16 +1,13 @@
-﻿using Webbanhang.Models;
-using System.Collections.Generic;
+using lab06.Models;
 
-namespace Webbanhang.Repositories
+namespace lab06.Repositories
 {
     public interface IProductRepository
     {
-
-
-        Task<IEnumerable<Product>> GetAllAsync();
-        Task<Product> GetByIdAsync(int id);
-        Task AddAsync(Product product);
-        Task UpdateAsync(Product product);
-        Task DeleteAsync(int id);
+        Task<IEnumerable<Product>> GetProductsAsync();
+        Task<Product> GetProductByIdAsync(int id);
+        Task AddProductAsync(Product product);
+        Task UpdateProductAsync(Product product);
+        Task DeleteProductAsync(int id);
     }
 }

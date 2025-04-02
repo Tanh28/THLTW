@@ -1,63 +1,46 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Webbanhang.Repositories;
-using Webbanhang.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using lab06.Models;
+using lab06.Repositories;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Kết nối Database
+// Cấu hình DbContext với SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Cấu hình Identity
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddDefaultTokenProviders()
-    .AddDefaultUI()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+// Đăng ký dịch vụ
+builder.Services.AddControllers();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
-builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews();
+// Cấu hình Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-// Đăng ký Repository
-builder.Services.AddScoped<IProductRepository, EFProductRepository>();
-builder.Services.AddScoped<ICategoryRepository, EFCategoryRepository>();
-
-// Cấu hình Session
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
+// Cấu hình CORS
+builder.Services.AddCors(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
+    options.AddPolicy(name: "MyAllowOrigins", policy =>
+    {
+        // Thay bằng địa chỉ localhost khi chạy frontend (VSCode)
+        policy.WithOrigins("http://127.0.0.1:5500", "http://localhost:5500")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 
 var app = builder.Build();
 
-// Middleware
-if (!app.Environment.IsDevelopment())
+// Cấu hình middleware
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseSession();  // Chuyển xuống đúng vị trí
-app.UseAuthentication();
+//Đặt trên UseAuthorization
+app.UseCors("MyAllowOrigins");
 app.UseAuthorization();
-app.MapRazorPages();
-
-// Cấu hình Routing (thêm Admin Area)
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllerRoute(
-        name: "Admin",
-        pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
-
-    endpoints.MapControllerRoute(
-        name: "default",
-        pattern: "{controller=Home}/{action=Index}/{id?}");
-});
-
+app.MapControllers();
 app.Run();
